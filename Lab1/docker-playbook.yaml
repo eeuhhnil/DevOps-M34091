@@ -1,0 +1,46 @@
+---
+- name: Install Docker on Ubuntu
+  hosts: app
+  become: true
+  vars:
+    ansible_user: "vagrant"
+  tasks:
+    - name: Update the apt package cache
+      apt:
+        update_cache: yes
+
+    - name: Add Docker API repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+
+    - name: Update the apt package cache again (after adding Docker repo)
+      apt:
+        update_cache: yes
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+
+    - name: Add user to docker group (optional)
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Install pip3
+      apt:
+        name: python3-pip
+        state: present
+
+    - name: Install Docker SDK for python
+      pip:
+        name: docker
+        state: present

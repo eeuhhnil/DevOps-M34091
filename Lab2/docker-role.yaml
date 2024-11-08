@@ -1,0 +1,9 @@
+---
+- name: "Install docker to docker hosts"
+  hosts: docker
+  become: true
+
+  vars:
+    docker_user: "vagrant" 
+  roles:
+    - role: '/home/vagrant/.ansible/roles/docker'

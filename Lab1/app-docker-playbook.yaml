@@ -1,0 +1,11 @@
+- name: "Run Django Application"
+  hosts: "app"
+  become: true
+  tasks:
+    - name: "Run Django Application"
+      docker_container:
+        name: django-app
+        image: timurbabs/django:latest
+        state: started
+        ports:
+          - "8000:8000"
