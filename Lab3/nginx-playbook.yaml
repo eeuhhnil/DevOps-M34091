@@ -1,0 +1,9 @@
+---
+- name: "Setup Nginx"
+  hosts: web
+  become: true
+
+  vars:
+    docker_user: "vagrant"
+  roles: 
+   - nginx

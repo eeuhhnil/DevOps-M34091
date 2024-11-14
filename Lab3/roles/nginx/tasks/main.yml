@@ -1,0 +1,27 @@
+---
+- name: "Install Nginx"
+  apt:
+    name: nginx
+    state: "{{ nginx_state }}"
+    update_cache: yes
+
+- name: "Copy Nginx Default HTML"
+  copy:
+    src: "{{ nginx_default_html_src }}"
+    dest: "{{ nginx_default_html_dest }}"
+    mode: preserve
+
+- name: "Copy Nginx Config File"
+  template:
+    src: "{{ nginx_config_src }}"
+    dest: "{{ nginx_config_available }}"
+  notify: "Restart Nginx"
+
+- name: "Enable Configuration"
+  file:
+    src: "{{ nginx_config_available }}"
+    dest: "{{ nginx_config_enabled }}"
+    state: link
+  notify: "Restart Nginx"
+
+

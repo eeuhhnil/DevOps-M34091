@@ -1,0 +1,13 @@
+---
+nginx_state: "latest"
+
+nginx_default_html_src: "files/index.html"
+nginx_default_html_dest: "/var/www/html"
+
+nginx_config_src: "templates/nginx.conf.j2"
+nginx_config_available: "/etc/nginx/sites-available/default"
+nginx_config_enabled: "/etc/nginx/sites-enabled/default"
+
+nginx_template_server_name: "localhost"
+nginx_template_static_root: "/var/www/html"
+
