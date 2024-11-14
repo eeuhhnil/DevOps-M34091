@@ -15,13 +15,13 @@
   template:
     src: "{{ nginx_config_src }}"
     dest: "{{ nginx_config_available }}"
-  notify: "Restart Nginx"
+  notify: "Reload Nginx"
 
 - name: "Enable Configuration"
   file:
     src: "{{ nginx_config_available }}"
     dest: "{{ nginx_config_enabled }}"
     state: link
-  notify: "Restart Nginx"
+  notify: "Reload Nginx"
 
 

@@ -2,8 +2,23 @@
 - name: "Setup Nginx"
   hosts: web
   become: true
+  
+  roles:
+    - nginx
 
+- name: "Install Docker to app hosts"
+  hosts: "app"
+  become: true
+
+  roles:
+    - docker
   vars:
-    docker_user: "vagrant"
-  roles: 
-   - nginx
+    - docker_user: "vagrant"
+  tasks:
+    - name: "Run Django Application"
+      docker_container:
+        name: django-app
+        image: timurbabs/django:latest
+        state: started
+        ports:
+          - "8000:8000"
