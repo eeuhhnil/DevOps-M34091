@@ -1,0 +1,28 @@
+---
+- name: "server creates directory"
+  file:
+    path: "{{ client_configs_dir }}/files"
+    state: directory
+
+- name: "server copy config"
+  template:
+    src: "{{ openvpn_client_template }}"
+    dest: "{{ client_configs_dir }}/base.ovpn"
+
+- name: "server create client {{ openvpn_client_common_name }}.ovpn file"
+  become: true
+  shell: "cat {{ client_configs_dir }}/base.ovpn \
+    <(echo -e '\n') \
+    <(echo -e '<ca>') \
+    {{ client_configs_dir }}/keys/ca.crt \
+    <(echo -e '</ca>\n<cert>') \
+    {{ client_configs_dir }}/keys/{{ openvpn_client_common_name }}.crt \ 
+    <(echo -e '</cert>\n<key>') \
+    {{ client_configs_dir }}/keys/{{ openvpn_client_common_name }}.key \
+    <(echo -e '</key>\n<tls-crypt>') \
+    {{ client_configs_dir }}/keys/ta.key \
+    <(echo -e '</tls-crypt>') \
+    > {{ client_configs_dir }}/files/{{ openvpn_client_common_name }}.ovpn"
+  args:
+    chdir: "{{ client_configs_dir }}/files/"
+    executable: /bin/bash

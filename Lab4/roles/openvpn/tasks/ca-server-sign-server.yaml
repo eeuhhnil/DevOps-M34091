@@ -1,0 +1,17 @@
+---
+- name: "CA sign the request"
+  command:
+    cmd: "{{ easy_rsa_binary }}/easyrsa sign-req server {{ openvpn_server_common_name }}"
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki/issued/{{ openvpn_server_common_name }}.crt"
+  environment:
+    EASYRSA_BATCH: "yes"
+
+- name: "CA copy signed cert and ca.crt"
+  copy:
+    src: "{{ item }}"
+    dest: "/tmp/{{ item | basename}}"
+    remote_src: "yes"
+  loop:
+    - "{{ easy_rsa_dir }}/pki/issued/{{ openvpn_server_common_name }}.crt"
+    - "{{ easy_rsa_dir }}/pki/ca.crt"

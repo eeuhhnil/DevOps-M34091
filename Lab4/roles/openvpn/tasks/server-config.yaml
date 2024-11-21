@@ -1,0 +1,38 @@
+---
+- name: "Openvpn server | copy config"
+  become: true
+  template:
+    src: "{{ openvpn_server_template }}"
+    dest: "{{ openvpn_dir }}/server.conf"
+  notify: 
+    - "start openvpn"
+
+- name: "Openvpn server | configuration IP forwarding"
+  become: true
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    state: present
+    reload: yes
+
+- name: "server add ufw before content"
+  become: true
+  blockinfile:
+    path: "{{ ufw_before_path }}"
+    insertbefore: BOF
+    content: "{{ ufw_before_content }}"
+
+- name: "server customize ufw forwarding policy"
+  become: true
+  lineinfile:
+    line: "{{ ufw_forwarding_policy }}"
+    path: "{{ ufw_forwarding_default_path }}"
+    regexp: "^DEFAULT_FORWARD_POLICY=\"DROP\""
+
+- name: "server open ufw ports for openvpn"
+  become: true
+  community.general.ufw:
+    rule: "{{ ufw_rule }}"
+    port: "{{ ufw_port }}"
+    proto: "{{ ufw_proto }}"
+    state: reloaded

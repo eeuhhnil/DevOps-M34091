@@ -1,0 +1,33 @@
+---
+- name: "CA install easy-rsa"
+  become: true
+  apt:
+    name:
+      - easy-rsa
+    state: "present"
+    update_cache: "yes"
+
+- name: "CA create dir"
+  file:
+    path: "{{ easy_rsa_dir }}"
+    state: "directory"
+    mode: "0700"
+
+- name: "CA add variables for ca"
+  template:
+    src: "{{ easy_rsa_vars_template }}"
+    dest: "{{ easy_rsa_dir }}/vars"
+
+- name: "CA init-pki"
+  command:
+    cmd: "{{ easy_rsa_binary }}/easyrsa init-pki"
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki"
+
+- name: "CA create CA cert & key"
+  command:
+    cmd: "{{ easy_rsa_binary }}/easyrsa build-ca nopass"
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki/ca.crt"
+  environment:
+    EASYRSA_BATCH: "yes"

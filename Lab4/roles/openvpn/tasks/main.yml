@@ -1,0 +1,21 @@
+---
+
+- include_tasks: ca-server-init.yaml
+
+- include_tasks: server-init.yaml
+
+- include_tasks: ca-server-sign-server.yaml
+
+- include_tasks: server-copy-servers-certs.yaml
+
+- include_tasks: server-register-clients.yaml
+
+- include_tasks: ca-server-sign-client.yaml
+
+- include_tasks: server-copy-client-certs.yaml
+
+- include_tasks: server-config.yaml
+
+- include_tasks: server-create-client-infra.yaml
+
+- include_tasks: client.yaml

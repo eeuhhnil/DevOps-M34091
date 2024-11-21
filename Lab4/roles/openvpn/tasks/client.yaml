@@ -1,0 +1,6 @@
+---
+- name: "client fetch client config"
+  fetch:
+    src: "{{ client_configs_dir }}/files/{{ openvpn_client_common_name }}.ovpn"
+    dest: "{{ playbook_dir }}/ovpn-client-conf/{{ inventory_hostname }}-{{ openvpn_client_common_name }}.ovpn"
+    flat: true

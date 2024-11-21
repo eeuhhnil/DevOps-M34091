@@ -1,0 +1,53 @@
+---
+- name: "server install packages"
+  become: true
+  apt:
+    name:
+      - openvpn
+      - easy-rsa
+    state: "present"
+    update_cache: "yes"
+
+ #todo - only 2 vars - algo&digest
+- name: "server add variables for CA"
+  template:
+    src: "{{ easy_rsa_vars_template }}"
+    dest: "{{ easy_rsa_dir }}/vars"
+
+- name: "server init-pki"
+  command:
+    cmd: "{{ easy_rsa_binary }}/easyrsa init-pki"
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki"
+
+- name: "server create Diffie-Hellman.pem"
+  command:
+    cmd: "{{ easy_rsa_binary }}/easyrsa gen-dh"
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki/dh.pem"
+
+- name: "server create crl.pem"
+  command:
+    cmd: "{{ easy_rsa_binary }}/easyrsa gen-crl"
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki/crl.pem"
+
+- name: "server HMAC tls-crypt"
+  command:
+    cmd: "openvpn --genkey --secret {{ easy_rsa_dir }}/pki/ta.key"
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki/ta.key"
+
+- name: "server create request for sign server cert"
+  command:
+    cmd: "{{ easy_rsa_binary }}/easyrsa gen-req {{ openvpn_server_common_name }} nopass"
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki/reqs/{{ openvpn_server_common_name }}.req"
+  environment:
+    EASYRSA_BATCH: "yes"
+
+- name: "server copy request cert for signing"
+  copy:
+    src: "{{ easy_rsa_dir }}/pki/reqs/{{ openvpn_server_common_name }}.req"
+    dest: "/tmp/{{ openvpn_server_common_name }}.req"
+    remote_src: "yes"

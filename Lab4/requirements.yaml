@@ -1,0 +1,4 @@
+roles:
+  - src: git+https://gitlab.com/devops-itmo2/open-vpn.git
+    version: main
+    name: openvpn

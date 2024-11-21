@@ -1,0 +1,15 @@
+---
+- name: "server copy files to {{ openvpn_dir }}"
+  become: true
+  copy:
+    src: "{{ item }}"
+    dest: "{{ openvpn_dir }}/{{ item | basename }}"
+    mode: "0640"
+    remote_src: "yes"
+  loop:
+   - "{{ easy_rsa_dir }}/pki/ta.key"
+   - "{{ easy_rsa_dir }}/pki/dh.pem"
+   - "{{ easy_rsa_dir }}/pki/crl.pem"
+   - "{{ easy_rsa_dir }}/pki/private/{{ openvpn_server_common_name }}.key"
+   - "/tmp/{{ openvpn_server_common_name }}.crt"
+   - "/tmp/ca.crt" 

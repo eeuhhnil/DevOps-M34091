@@ -1,0 +1,31 @@
+---
+- name: "server create client-configs dir"
+  file:
+    path: "{{ client_configs_dir }}/keys"
+    state: directory
+    mode: "0755"
+
+- name: "server chmod only for owner"
+  file:
+    path: "{{ client_configs_dir }}"
+    mode: "0700"
+
+- name: "server request for signing client cert"
+  command:
+    cmd: "{{ easy_rsa_binary }}/easyrsa gen-req {{ openvpn_client_common_name }} nopass"
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki/private/{{ openvpn_client_common_name }}.key"
+  environment:
+    EASYRSA_BATCH: "yes"
+
+- name: "server copy files to {{ client_configs_dir }}/keys/"
+  copy:
+    src: "{{ easy_rsa_dir }}/pki/private/{{ openvpn_client_common_name }}.key"
+    dest: "{{ client_configs_dir }}/keys/{{ openvpn_client_common_name }}.key"
+    remote_src: "yes"
+
+- name: "server copy request cert for signing"
+  copy:
+    src: "{{ easy_rsa_dir }}/pki/reqs/{{ openvpn_client_common_name }}.req"
+    dest: "/tmp/{{ openvpn_client_common_name }}.req"
+    remote_src: "yes"
