@@ -1,5 +1,0 @@
-[master]
-server1 ansible_ssh_host=192.168.56.201 ansible_user=vagrant ansible_password=vagrant
-
-[replica]
-client1 ansible_ssh_host=192.168.56.202 ansible_user=vagrant ansible_password=vagrant

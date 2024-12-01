@@ -1,4 +1,0 @@
-roles:
-  - src: git+https://gitlab.com/devops-itmo2/pgsql.git
-    version: main
-    name: pgsql
