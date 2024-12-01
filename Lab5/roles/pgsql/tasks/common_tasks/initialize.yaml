@@ -1,0 +1,25 @@
+---
+- name: "is pgsql data directory exists"
+  file:
+    path: "{{ pgsql_data_dir }}/main"
+    owner: postgres
+    group: postgres
+    state: directory
+    mode: 0700
+
+- name: "check if Postgresql is initialized"
+  stat:
+    path: "{{ pgsql_data_dir }}/main/PG_VERSION"
+  register: pgdata_dir_version
+
+- name: "initialize Postgresql"
+  become_user: postgres
+  command: "{{ pgsql_data_dir }}/bin/initdb -D {{ pgsql_data_dir }}/main"
+  when: not pgdata_dir_version.stat.exists
+
+- name: "start and enable"
+  become: true
+  service:
+    name: postgresql.service
+    state: started
+    enabled: true

@@ -1,0 +1,37 @@
+---
+- name: "stop pgsql"
+  service: 
+    name: postgresql.service
+    state: stopped
+
+- name: "remove main dir"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  file:
+    path: "{{ pgsql_data_dir }}/main"
+    state: absent
+
+- name: "create main dir"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  file:
+    path: "{{ pgsql_data_dir }}/main"
+    state: directory
+    mode: go-rwx
+
+- name: "create backup"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  command: "pg_basebackup -P -R -X stream -c fast -h {{ item }} -U postgres -D {{ pgsql_data_dir }}/main"
+  environment:
+    PGPASSWORD: "{{ pgsql_postgres_password }}"
+  with_items: "{{ master_address }}"
+  notify: "restart postgresql"
+
+

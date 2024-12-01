@@ -1,0 +1,22 @@
+---
+- name: Setup Master
+  hosts: master
+  become: true
+
+  tasks:
+    - name: "Include pgsql for master role"
+      include_role:
+        name: pgsql
+      vars:
+        pgsql_role: master
+
+- name: Setup Replica
+  hosts: replica
+  become: true
+
+  tasks:
+    - name: "Include pgsql for replica role"
+      include_role:
+        name: pgsql
+      vars:
+        pgsql_role: replica

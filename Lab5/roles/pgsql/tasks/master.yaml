@@ -1,0 +1,94 @@
+---
+#add db user priv
+- name: "create databases"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  postgresql_db:
+    name: "{{ item.name }}"
+    encoding: "{{ item.encoding | default(omit) }}"
+    lc_collate: "{{ item.lc_collate | default(omit) }}"
+    lc_ctype: "{{ item.lc_ctype | default(omit) }}"
+    conn_limit: "{{ item.conn_limit | default(omit)}}"
+    port: "{{ item.port | default(5432) }}"
+  with_items: "{{ pgsql_databases }}"
+
+- name: "create users"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    encrypted: "{{ item.encrypted | default('true') }}"
+    role_attr_flags: "{{ item.role_attr_flags | default(omit) }}"
+    port: "{{ item.port | default(5432) }}"
+  with_items: "{{ pgsql_users }}"
+
+- name: "grant priveleges to users"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  postgresql_privs:
+    type: database
+    database: "{{ item.name }}"
+    roles: "{{ item.roles }}"
+    privs: "{{ item.privs | default(ALL) }}"
+  with_items: "{{ pgsql_databases }}"
+
+- name: "allow md5 connections for all users"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  postgresql_pg_hba:
+    dest: "{{ pgsql_config_dir }}/pg_hba.conf"
+    contype: host
+    address: 0.0.0.0/0
+    databases: "{{ item.name }}"
+    method: "{{ users_hba_method }}"
+    users: "{{ item.roles }}"
+  with_items: "{{ pgsql_databases }}"
+  notify: "restart postgresql"
+
+# config master
+- name: "update pg_hba for master"
+  postgresql_pg_hba:
+    dest: "{{ pgsql_config_dir }}/pg_hba.conf"
+    contype: host
+    databases: replication
+    source: "{{ item }}/32"
+    method: "{{ replication_hba_method }}"
+    users: postgres
+  with_items: "{{ replica_address }}"
+
+- name: "update postgresql.conf for master"
+  blockinfile:
+    path: "{{ pgsql_config_dir }}/postgresql.conf"
+    block: |
+      listen_addresses = 'localhost, {{ item }}'
+      wal_level = hot_standby
+      archive_mode = on
+      archive_command = 'cd .'
+      max_wal_senders = 8
+      hot_standby = on
+      port = 5432
+  with_items: "{{ master_address }}"
+
+- name: "update postgres user password"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  postgresql_user:
+    name: postgres
+    password: "{{ pgsql_postgres_password }}"
+  notify: "restart postgresql"
+
+- name: "start pgsql"
+  service: 
+    name: postgresql.service
+    state: started

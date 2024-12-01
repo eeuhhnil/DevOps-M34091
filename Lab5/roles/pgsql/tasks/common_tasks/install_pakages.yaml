@@ -1,0 +1,23 @@
+---
+- name: "import the repository key"
+  apt_key:
+    url: "{{ pgsql_repo_key }}"
+    state: present
+
+- name: "create the file repo config"
+  apt_repository:
+    repo: "{{ pgsql_repo }}"
+    state: present
+    filename: "{{ pgsql_repo_filename }}"
+
+- name: "install package"
+  apt:
+    name: "{{ pgsql_packages }}"
+    state: present
+    update_cache: yes
+
+- name: "install additional support-packages"
+  apt:
+    name: "{{ pgsql_support_packages }}"
+    state: present
+    update_cache: yes

@@ -1,0 +1,10 @@
+---
+- include_tasks: common_tasks/install_pakages.yaml
+
+- include_tasks: common_tasks/initialize.yaml
+
+- include_tasks: common_tasks/configure.yaml
+
+- include_tasks: common_tasks/change_data_directory.yaml
+
+- include_tasks: "{{ pgsql_role }}.yaml"
