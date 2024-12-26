@@ -1,0 +1,33 @@
+---
+- name: "Prometheus | Create Prometheus group"
+  become: true
+  group:
+    name: "{{ prometheus_group }}"
+    system: yes
+    state: present
+
+- name: "Prometheus | Create Prometheus user"
+  become: true
+  user:
+    name: "{{ prometheus_user.name }}"
+    group: "{{ prometheus_group }}"
+    system: yes
+    shell: "{{ prometheus_user.shell }}"
+
+- name: "Prometheus | Chown Prometheus directories"
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: yes
+    owner: "{{ prometheus_user.name }}"
+    group: "{{ prometheus_group }}"
+    mode: '0775'
+  with_items: "{{ prometheus_dirs }}"
+
+- name: "Prometheus | Create systemd Prometheus Service"
+  become: true
+  template:
+    src: "{{ prometheus_systemd.template }}"
+    dest: "{{ prometheus_systemd.path }}"
+  notify: "Prometheus | Start and Enable Service"

@@ -1,0 +1,32 @@
+---
+- name: "Grafana | Create dashboard directory"
+  file: 
+    path: "{{ grafana_dashboards_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: "Grafana | Change default configuration"
+  #get_url
+  command: 
+    cmd: |
+        curl --fail --compressed
+        https://grafana.com/api/dashboards/{{ item.dashboard_id }}/revisions/{{ item.revision_id }}/download
+        -o {{ grafana_dashboards_dir }}/{{ item.dashboard_id }}.json
+    creates: "{{ grafana_dashboards_dir }}/{{ item.dashboard_id }}.json"
+  with_items: "{{ grafana_dashboards }}"
+
+- name: "Grafana | Set dashboard datasources"
+  replace:
+    dest: "{{ grafana_dashboards_dir }}/{{ item.dashboard_id }}.json"
+    regexp: '"(?:\${)?DS_[A-Z0-9_-]+(?:})?"'
+    replace: '"{{ item.datasource }}"'
+  with_items: "{{ grafana_dashboards }}"
+
+- name: "Grafana | Import dashboards"
+  grafana_dashboard:
+    url: "{{ grafana_api_url }}"
+    url_username: "{{ grafana_security.admin_user }}"
+    url_password: "{{ grafana_security.admin_password }}"
+    overwrite: yes
+    path: "{{ grafana_dashboards_dir }}/{{ item.dashboard_id }}.json"
+  with_items: "{{ grafana_dashboards }}"

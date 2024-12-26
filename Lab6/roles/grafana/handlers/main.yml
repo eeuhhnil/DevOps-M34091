@@ -1,0 +1,14 @@
+---
+- name: "Grafana | Start Grafana Server"
+  become: true
+  systemd:
+    name: "{{ grafana_service.name }}"
+    state: started
+    enabled: "{{ grafana_service.enabled }}"
+    daemon_reload: "{{ grafana_service.daemon_reload }}"
+
+- name: "Grafana | Resatrt Grafana Server"
+  become: true
+  service:
+    name: "{{ grafana_service.name }}"
+    state: restarted

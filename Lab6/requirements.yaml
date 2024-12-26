@@ -1,0 +1,13 @@
+roles:
+  - src: git+https://gitlab.com/devops-itmo2/docker-role
+    version: main
+    name: docker
+  - src: git+https://gitlab.com/devops-itmo2/prometheus
+    version: main
+    name: prometheus
+  - src: https://gitlab.com/devops-itmo2/grafana
+    version: main
+    name: grafana
+  - src: https://gitlab.com/devops-itmo2/loki
+    version: main
+    name: loki

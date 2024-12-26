@@ -1,0 +1,29 @@
+---
+- name: "Grafana | Install additional packages"
+  become: true
+  apt:
+    name: "{{ apt_additional_pkg }}"
+    state: present
+    update_cache: yes
+
+- name: "Grafana | Wget .deb package"
+  become: true
+  apt:
+    deb: "{{ grafana_deb_pkg_url }}"
+  notify: "Grafana | Start Grafana Server"
+
+- meta: flush_handlers
+
+- name: "Grafana | Change default configuration"
+  become: true
+  template:
+    src: "{{ grafana_config_file.template }}"
+    dest: "{{ grafana_config_file.path }}"
+  when: granafa_config is defined
+  notify: "Grafana | Resatrt Grafana Server"
+
+- include_tasks: "add_datasource.yml"
+  when: grafana_datasources is defined
+
+- include_tasks: "add_dashboards.yml"
+  when: grafana_dashboards is defined

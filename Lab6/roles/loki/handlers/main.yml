@@ -1,0 +1,8 @@
+---
+- name: "Loki | Start and Enable Loki Service"
+  become: true
+  systemd:
+    name: "{{ loki_service.name }}"
+    state: started
+    enabled: "{{ loki_service.enabled }}"
+    daemon_reload: "{{ loki_service.daemon_reload }}"

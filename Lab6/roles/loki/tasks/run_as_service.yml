@@ -1,0 +1,39 @@
+---
+- name: "Loki | Create Loki group"
+  become: true
+  group:
+    name: "{{ loki_group }}"
+    system: yes
+    state: present
+
+- name: "Loki | Create Loki user"
+  become: true
+  user:
+    name: "{{ loki_user.name }}"
+    group: "{{ loki_group }}"
+    system: yes
+    shell: "{{ loki_user.shell }}"
+
+- name: "Loki | Chown Loki directories"
+  become: true
+  file:
+    path: "{{ item.path }}"
+    state: "{{ item.state }}"
+    recurse: "{{ item.recurse }}"
+    owner: "{{ loki_user.name }}"
+    group: "{{ loki_group }}"
+    mode: '0775'
+  with_items: 
+    - state: file
+      path: "{{ loki_bin.dir }}/{{ loki_bin.file }}"
+      recurse: no
+    - state: directory
+      path: "{{ loki_etc_dir }}"
+      recurse: yes
+
+- name: "Loki | Create systemd Loki Service"
+  become: true
+  template:
+    src: "{{ loki_service.template_path }}"
+    dest: "/etc/systemd/system/{{ loki_service.name }}"
+  notify: "Loki | Start and Enable Loki Service"

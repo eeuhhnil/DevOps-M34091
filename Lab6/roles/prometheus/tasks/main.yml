@@ -1,0 +1,38 @@
+---
+- name: "Prometheus | Update packages"
+  become: true
+  apt:
+    update_cache: yes
+  
+- name: "Prometheus | Create Prometheus Direcotry"
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items: "{{ prometheus_dirs }}"
+
+- name: "Prometheus | Extract Prometheus"
+  unarchive:
+    src: "{{ prometheus_url }}"
+    dest: "{{ prometheus_pkg_path }}"
+    remote_src: true
+    creates: "{{ prometheus_pkg_path_with_pkg_name }}"
+  register: register_prometheus_file
+
+- name: "Prometheus | Move Prometheus files"
+  become: true
+  command: "mv {{ item.src }} {{ item.dest }}"
+  with_items: "{{ prometheus_files_to_move }}"
+  when: register_prometheus_file.changed == True
+
+- name: "Prometheus | Config Prometheus"
+  become: true
+  template:
+    src: "{{ prometheus_config.template }}"
+    dest: "{{ prometheus_config.path }}"
+
+- include_tasks: run_as_service.yml
+
+- include_tasks: add_source.yml
+  when: prometheus_scrape_configs is defined

@@ -1,0 +1,14 @@
+galaxy_info:
+  role_name: prometheus
+  namespace: linhitmo
+  author: Duong Thi Hue Linh
+  description: Prometheus role for Ubuntu
+  company: ITMO Univeristy
+
+  license: BSD
+
+  min_ansible_version: 2.14.0
+
+  galaxy_tags: []
+
+dependencies: []
